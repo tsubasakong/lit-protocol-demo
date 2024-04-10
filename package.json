@@ -1,0 +1,20 @@
+{
+  "name": "my-encryption-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@lit-protocol/lit-node-client-nodejs": "^4.2.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^5.7.2",
+    "siwe": "^1.1.6",
+    "uint8arrays": "^3.0.0"
+  }
+}
