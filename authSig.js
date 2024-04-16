@@ -1,63 +1,61 @@
 import { fromString as uint8arrayFromString } from "uint8arrays/from-string";
 import ethers from "ethers";
 import siwe from "siwe";
-// import { LitNodeClient } from "@lit-protocol/lit-node-client-nodejs";
 import * as LitJsSdk from "@lit-protocol/lit-node-client-nodejs";
 
 import dotenv from "dotenv";
 dotenv.config();
-// Network available:
-// - https://developer.litprotocol.com/v3/network/networks/testnet/
-// - https://developer.litprotocol.com/v3/network/networks/mainnet
-const NETWORK = "cayenne";
 
-const litNodeClient = new LitJsSdk.LitNodeClientNodeJs({ network: NETWORK });
-await litNodeClient.connect();
+async function generateAuthSig(privKey) {
 
-const privKey = process.env.PRIVATE_KEY;
-console.log("privKey", privKey);
-const privKeyBuffer = uint8arrayFromString(privKey, "base16");
-const wallet = new ethers.Wallet(privKeyBuffer);
+ const litNodeClient = new LitJsSdk.LitNodeClientNodeJs({ network: "cayenne" });
+ await litNodeClient.connect();
 
-const domain = "localhost";
-const origin = "https://localhost/login";
-const statement =
-  "This is a test statement.  You can put anything you want here.";
-const expirationTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+ console.log("privKey", privKey);
+ const privKeyBuffer = uint8arrayFromString(privKey, "base16");
+ const wallet = new ethers.Wallet(privKeyBuffer);
 
-let nonce = litNodeClient.getLatestBlockhash();
+ const domain = "localhost";
+ const origin = "https://localhost/login";
+ const statement = "This is a test statement. You can put anything you want here.";
+ const expirationTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
-const siweMessage = new siwe.SiweMessage({
-  domain,
-  address: wallet.address,
-  statement,
-  uri: origin,
-  version: "1",
-  chainId: "1",
-  nonce,
-  expirationTime,
-});
+ let nonce = litNodeClient.getLatestBlockhash();
 
-const messageToSign = siweMessage.prepareMessage();
+ const siweMessage = new siwe.SiweMessage({
+    domain,
+    address: wallet.address,
+    statement,
+    uri: origin,
+    version: "1",
+    chainId: "1",
+    nonce,
+    expirationTime,
+ });
 
-const signature = await wallet.signMessage(messageToSign);
+ const messageToSign = siweMessage.prepareMessage();
 
-const recoveredAddress = ethers.utils.verifyMessage(messageToSign, signature);
-console.log("recoveredAddress", recoveredAddress);
+ const signature = await wallet.signMessage(messageToSign);
 
-if (recoveredAddress !== wallet.address) {
-  throw new Error("Recovered address does not match wallet address");
-}
+ const recoveredAddress = ethers.utils.verifyMessage(messageToSign, signature);
+ console.log("recoveredAddress", recoveredAddress);
 
-const latestBlockhash = litNodeClient.getLatestBlockhash();
-console.log("latestBlockhash", latestBlockhash);
+ if (recoveredAddress !== wallet.address) {
+    throw new Error("Recovered address does not match wallet address");
+ }
+
+ const latestBlockhash = litNodeClient.getLatestBlockhash();
+ console.log("latestBlockhash", latestBlockhash);
 
 const authSig = {
-  sig: signature,
-  derivedVia: "web3.eth.personal.sign",
-  signedMessage: messageToSign,
-  address: recoveredAddress,
-};
+    sig: signature,
+    derivedVia: "web3.eth.personal.sign",
+    signedMessage: messageToSign,
+    address: recoveredAddress,
+ };
 
-console.log("authSig", authSig);
-export default authSig;
+ console.log("authSig", authSig);
+ return authSig;
+}
+
+export default generateAuthSig;

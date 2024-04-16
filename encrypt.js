@@ -1,6 +1,6 @@
 import fs from "fs";
 import * as LitJsSdk from "@lit-protocol/lit-node-client-nodejs";
-import authSig from "./authSig.js";
+import generateAuthSig from "./authSig.js"; // Import the function
 
 async function encryptData(walletAddress) {
  try {
@@ -18,14 +18,16 @@ async function encryptData(walletAddress) {
         chain: 'ethereum',
         method: '',
         parameters: [
-          walletAddress,
+          ":userAddress",
+          "latest",
         ],
         returnValueTest: {
-          comparator: '=',
-          value: 'true',
+          comparator: "=",
+          value: walletAddress,  // wallet address which should be able to encrypt/decrypt the string
         },
       },
     ];
+    const authSig = await generateAuthSig(process.env.PRIVATE_KEY_ENCRYPT);
 
     const { ciphertext, dataToEncryptHash } = await LitJsSdk.encryptString(
       {

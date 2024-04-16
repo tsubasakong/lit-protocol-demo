@@ -1,0 +1,4 @@
+# put node_modules here
+node_modules
+# env file
+.env
